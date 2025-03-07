@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Speed Comparison Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .game-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .math-problem, .comparison-question {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .animals {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            font-size: 72px;
+        }
+        .animal-info {
+            text-align: center;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 27px;
+        }
+        .score {
+            text-align: right;
+            font-weight: bold;
+        }
+        .answer-input {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 8px;
+            font-size: 16px;
+            width: 100px;
+            text-align: center;
+        }
+        .check-button {
+            margin-left: 10px;
+            background-color: #2196F3;
+        }
+        .check-button:hover {
+            background-color: #0b7dda;
+        }
+        .speeds {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+        .speed-value {
+            text-align: center;
+            font-weight: bold;
+            min-height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🦁 Animal Speed Comparison Game 🐢</h1>
+        <p>Solve the math problem to find an animal's speed, then compare it to another animal!</p>
+    </div>
+    
+    <div class="game-container">
+        <div class="score">Score: <span id="score">0</span></div>
+        
+        <div id="stage1">
+            <div class="math-problem" id="math-problem"></div>
+            
+            <div class="answer-input">
+                <input type="number" id="answer-input" placeholder="Speed">
+                <button class="check-button" id="check-answer">Check</button>
+            </div>
+            
+            <div class="animals">
+                <div class="animal-info">
+                    <div id="animal1"></div>
+                    <div class="speed-value" id="speed1"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="stage2" style="display: none;">
+            <div class="comparison-question" id="comparison-question"></div>
+            
+            <div class="animals">
+                <div class="animal-info">
+                    <div id="animal1-compare"></div>
+                    <div class="speed-value" id="speed1-compare"></div>
+                </div>
+                <div style="font-size: 36px; margin-top: 20px;">❓</div>
+                <div class="animal-info">
+                    <div id="animal2-compare"></div>
+                    <div class="speed-value" id="speed2-compare"></div>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button id="faster-btn">Faster Than ⚡</button>
+                <button id="equal-btn">Equal To =</button>
+                <button id="slower-btn">Slower Than 🐌</button>
+            </div>
+        </div>
+        
+        <div class="result" id="result"></div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="next-question" style="display: none;">Next Question</button>
+        </div>
+    </div>
+
+    <script>
+        // Animal emojis with their respective speed ranges (in mph)
+        const animals = [
+            { emoji: "🐆", name: "Cheetah", minSpeed: 60, maxSpeed: 75 },
+            { emoji: "🦁", name: "Lion", minSpeed: 45, maxSpeed: 55 },
+            { emoji: "🐎", name: "Horse", minSpeed: 35, maxSpeed: 45 },
+            { emoji: "🦊", name: "Fox", minSpeed: 28, maxSpeed: 38 },
+            { emoji: "🐺", name: "Wolf", minSpeed: 30, maxSpeed: 40 },
+            { emoji: "🦌", name: "Deer", minSpeed: 25, maxSpeed: 35 },
+            { emoji: "🐕", name: "Dog", minSpeed: 15, maxSpeed: 30 },
+            { emoji: "🐂", name: "Ox", minSpeed: 12, maxSpeed: 22 },
+            { emoji: "🐖", name: "Pig", minSpeed: 10, maxSpeed: 15 },
+            { emoji: "🐘", name: "Elephant", minSpeed: 15, maxSpeed: 25 },
+            { emoji: "🦒", name: "Giraffe", minSpeed: 30, maxSpeed: 40 },
+            { emoji: "🐪", name: "Camel", minSpeed: 20, maxSpeed: 30 },
+            { emoji: "🦓", name: "Zebra", minSpeed: 35, maxSpeed: 45 },
+            { emoji: "🐄", name: "Cow", minSpeed: 15, maxSpeed: 25 },
+            { emoji: "🐇", name: "Rabbit", minSpeed: 25, maxSpeed: 35 },
+            { emoji: "🐢", name: "Turtle", minSpeed: 1, maxSpeed: 5 },
+            { emoji: "🦥", name: "Sloth", minSpeed: 1, maxSpeed: 2 },
+            { emoji: "🐌", name: "Snail", minSpeed: 0.03, maxSpeed: 0.1 }
+        ];
+
+        // Operations for math problems
+        const operations = [
+            { symbol: "+", operation: (a, b) => a + b },
+            { symbol: "-", operation: (a, b) => a - b },
+            { symbol: "×", operation: (a, b) => a * b },
+            { symbol: "÷", operation: (a, b) => a / b }
+        ];
+
+        let currentAnimal1, currentAnimal2;
+        let currentSpeed1, targetSpeed2;
+        let currentMathProblem;
+        let score = 0;
+        let currentStage = 1;
+
+        // DOM elements
+        const mathProblemElement = document.getElementById("math-problem");
+        const animal1Element = document.getElementById("animal1");
+        const speed1Element = document.getElementById("speed1");
+        const answerInput = document.getElementById("answer-input");
+        const checkAnswerButton = document.getElementById("check-answer");
+        const resultElement = document.getElementById("result");
+        const nextQuestionButton = document.getElementById("next-question");
+        const scoreElement = document.getElementById("score");
+        
+        const stage1Element = document.getElementById("stage1");
+        const stage2Element = document.getElementById("stage2");
+        
+        const animal1CompareElement = document.getElementById("animal1-compare");
+        const animal2CompareElement = document.getElementById("animal2-compare");
+        const speed1CompareElement = document.getElementById("speed1-compare");
+        const speed2CompareElement = document.getElementById("speed2-compare");
+        const comparisonQuestionElement = document.getElementById("comparison-question");
+        
+        const fasterButton = document.getElementById("faster-btn");
+        const equalButton = document.getElementById("equal-btn");
+        const slowerButton = document.getElementById("slower-btn");
+
+        // Initialize the game
+        function initGame() {
+            generateMathProblem();
+            updateScore();
+            
+            // Event listeners
+            checkAnswerButton.addEventListener("click", checkAnswer);
+            answerInput.addEventListener("keydown", function(event) {
+                if (event.key === "Enter") {
+                    checkAnswer();
+                }
+            });
+            
+            nextQuestionButton.addEventListener("click", nextQuestion);
+            
+            fasterButton.addEventListener("click", () => checkComparison("faster"));
+            equalButton.addEventListener("click", () => checkComparison("equal"));
+            slowerButton.addEventListener("click", () => checkComparison("slower"));
+        }
+
+        // Generate a math problem
+        function generateMathProblem() {
+            // Select a random animal for the first stage
+            currentAnimal1 = getRandomAnimal();
+            
+            // Decide the target speed within the animal's range
+            currentSpeed1 = Math.round(getRandomNumber(currentAnimal1.minSpeed, currentAnimal1.maxSpeed));
+            
+            // Generate a math problem that results in the animal's speed
+            currentMathProblem = generateProblem(currentSpeed1);
+            
+            // Update the UI
+            mathProblemElement.textContent = `${currentAnimal1.emoji} ${currentAnimal1.name}'s speed (mph) = ${currentMathProblem}`;
+            animal1Element.textContent = currentAnimal1.emoji;
+            speed1Element.textContent = "";
+            answerInput.value = "";
+            resultElement.textContent = "";
+            answerInput.focus();
+            
+            // Hide the next question button
+            nextQuestionButton.style.display = "none";
+            
+            // Reset comparison buttons
+            fasterButton.disabled = false;
+            equalButton.disabled = false;
+            slowerButton.disabled = false;
+        }
+
+        // Generate a math problem that results in the target value
+        function generateProblem(targetValue) {
+            // Choose a random operation
+            const operation = operations[Math.floor(Math.random() * operations.length)];
+            
+            // Generate appropriate numbers based on the operation
+            let a, b;
+            
+            if (operation.symbol === "+") {
+                // For addition: two positive numbers that sum to target
+                a = Math.floor(Math.random() * (targetValue - 1)) + 1;
+                b = targetValue - a;
+            } else if (operation.symbol === "-") {
+                // For subtraction: first number larger than target
+                a = targetValue + Math.floor(Math.random() * 10) + 1;
+                b = a - targetValue;
+            } else if (operation.symbol === "×") {
+                // For multiplication: choose factors
+                const factors = getFactors(targetValue);
+                if (factors.length > 0) {
+                    const factorPair = factors[Math.floor(Math.random() * factors.length)];
+                    a = factorPair[0];
+                    b = factorPair[1];
+                } else {
+                    // Fallback if no factors (prime numbers)
+                    a = targetValue;
+                    b = 1;
+                }
+            } else if (operation.symbol === "÷") {
+                // For division: divisible numbers
+                b = Math.floor(Math.random() * 5) + 1;
+                a = targetValue * b;
+            }
+            
+            return `${a} ${operation.symbol} ${b}`;
+        }
+
+        // Get factors of a number for multiplication problems
+        function getFactors(num) {
+            const factors = [];
+            for (let i = 1; i <= Math.sqrt(num); i++) {
+                if (num % i === 0) {
+                    factors.push([i, num / i]);
+                }
+            }
+            return factors;
+        }
+
+        // Check the answer for the math problem
+        function checkAnswer() {
+            const userAnswer = parseInt(answerInput.value);
+            
+            if (isNaN(userAnswer)) {
+                resultElement.textContent = "Please enter a valid number.";
+                resultElement.style.color = "red";
+                return;
+            }
+            
+            if (userAnswer === currentSpeed1) {
+                resultElement.textContent = "Correct! You calculated the speed correctly.";
+                resultElement.style.color = "green";
+                speed1Element.textContent = `${currentSpeed1} mph`;
+                
+                // Move to stage 2
+                setTimeout(() => {
+                    setupComparisonStage();
+                }, 1000);
+            } else {
+                resultElement.textContent = `Incorrect. Try again!`;
+                resultElement.style.color = "red";
+            }
+        }
+
+        // Set up the comparison stage
+        function setupComparisonStage() {
+            currentStage = 2;
+            stage1Element.style.display = "none";
+            stage2Element.style.display = "block";
+            resultElement.textContent = "";
+            
+            // Select a different animal for comparison
+            do {
+                currentAnimal2 = getRandomAnimal();
+            } while (currentAnimal2.name === currentAnimal1.name);
+            
+            // Determine the speed of the second animal
+            targetSpeed2 = Math.round(getRandomNumber(currentAnimal2.minSpeed, currentAnimal2.maxSpeed));
+            
+            // Update the UI for comparison
+            animal1CompareElement.textContent = currentAnimal1.emoji;
+            animal2CompareElement.textContent = currentAnimal2.emoji;
+            speed1CompareElement.textContent = `${currentSpeed1} mph`;
+            speed2CompareElement.textContent = "?";
+            
+            comparisonQuestionElement.textContent = `Is the ${currentAnimal2.name} ${currentAnimal2.emoji} faster than, slower than, or equal to the ${currentAnimal1.name} ${currentAnimal1.emoji}?`;
+        }
+
+        // Check the comparison answer
+        function checkComparison(answer) {
+            let correctAnswer;
+            
+            if (targetSpeed2 > currentSpeed1) {
+                correctAnswer = "faster";
+            } else if (targetSpeed2 < currentSpeed1) {
+                correctAnswer = "slower";
+            } else {
+                correctAnswer = "equal";
+            }
+            
+            // Disable all buttons
+            fasterButton.disabled = true;
+            equalButton.disabled = true;
+            slowerButton.disabled = true;
+            
+            // Show the second animal's speed
+            speed2CompareElement.textContent = `${targetSpeed2} mph`;
+            
+            if (answer === correctAnswer) {
+                resultElement.textContent = `Correct! The ${currentAnimal2.name} is ${correctAnswer} than the ${currentAnimal1.name}.`;
+                resultElement.style.color = "green";
+                score++;
+                updateScore();
+            } else {
+                resultElement.textContent = `Incorrect. The ${currentAnimal2.name} is ${correctAnswer} than the ${currentAnimal1.name}.`;
+                resultElement.style.color = "red";
+            }
+            
+            // Show the next question button
+            nextQuestionButton.style.display = "inline-block";
+        }
+
+        // Move to the next question
+        function nextQuestion() {
+            currentStage = 1;
+            stage1Element.style.display = "block";
+            stage2Element.style.display = "none";
+            generateMathProblem();
+        }
+
+        // Helper function to get a random animal
+        function getRandomAnimal() {
+            return animals[Math.floor(Math.random() * animals.length)];
+        }
+
+        // Helper function to get a random number within a range
+        function getRandomNumber(min, max) {
+            return min + Math.random() * (max - min);
+        }
+
+        // Update the score display
+        function updateScore() {
+            scoreElement.textContent = score;
+        }
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>
