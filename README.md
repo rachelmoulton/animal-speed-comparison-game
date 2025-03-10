@@ -1,1 +1,1 @@
-math game made with Claude
+This math game was made with Claude. 
